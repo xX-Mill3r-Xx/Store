@@ -62,13 +62,13 @@ namespace Store.Api.Controllers
         [HttpPost]
         public ActionResult<ProductResponse> Create(CreateProductRequest request)
         {
-            var nextId = Products.Count = 0
+            var nextId = Products.Count == 0
                 ? 1
                 : Products.Max(product => product.Id) + 1;
 
             var product = new Product
             {
-                Id,
+                Id = nextId,
                 Name = request.Name,
                 Price = request.Price,
             };
@@ -82,7 +82,7 @@ namespace Store.Api.Controllers
                 Price = product.Price,  
             };
 
-            return CreateAction(
+            return CreatedAtAction(
                 nameof(GetById),
                 new { id = product.Id },
                 response);
