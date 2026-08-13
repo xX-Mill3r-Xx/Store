@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Store.Api.Dtos;
+using Store.Api.Models;
 
 namespace Store.Api.Controllers
 {
@@ -6,39 +8,55 @@ namespace Store.Api.Controllers
     [Route("api/v1/products")]
     public class ProductsController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var products = new[]
+        private static readonly List<Product> Products =
+        [
+            new Product
             {
-                new
-                {
-                    Id = 1, 
-                    Name = "NoteBook", 
-                    Price = 4500.00m
-                },
-                new 
-                {
-                    Id = 2,
-                    Name = "Mouse",
-                    Price = 150.00m
-                }
-            };
+                Id = 1,
+                Name = "Notebook",
+                Price = 4500m
+            },
+            new Product
+            {
+                Id = 2,
+                Name = "Mouse",
+                Price = 150m
+            }
+        ];
 
-            return Ok(products);
+        [HttpGet]
+        public ActionResult<IEnumerable<ProductResponse>> GetAll()
+        {
+            var response = Products
+                .Select(product => new ProductResponse
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    Price = product.Price
+                })
+                .ToList();
+
+            return Ok(response);
         }
 
         [HttpGet("{id:int}")]
-        public IActionResult GetById(int id)
+        public ActionResult<ProductResponse> GetById(int id)
         {
-            var product = new
+            var product = Products.FirstOrDefault(product => product.Id == id);
+
+            if (product is null)
             {
-                Id = id,
-                Name = "NoteBook",
-                Price = 4500.00m
+                return NotFound();
+            }
+
+            var response = new ProductResponse
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Price = product.Price
             };
 
-            return Ok(product);
+            return Ok(response);
         }
     }
 }
