@@ -58,5 +58,34 @@ namespace Store.Api.Controllers
 
             return Ok(response);
         }
+
+        [HttpPost]
+        public ActionResult<ProductResponse> Create(CreateProductRequest request)
+        {
+            var nextId = Products.Count = 0
+                ? 1
+                : Products.Max(product => product.Id) + 1;
+
+            var product = new Product
+            {
+                Id,
+                Name = request.Name,
+                Price = request.Price,
+            };
+
+            Products.Add(product);
+
+            var response = new ProductResponse
+            {
+                Id= product.Id,
+                Name = product.Name,
+                Price = product.Price,  
+            };
+
+            return CreateAction(
+                nameof(GetById),
+                new { id = product.Id },
+                response);
+        }
     }
 }
