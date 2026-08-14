@@ -1,5 +1,35 @@
 # Store API
 
+API REST de produtos em ASP.NET Core, organizada nas camadas `Api`, `Application`, `Domain` e `Infrastructure`. A persistência é feita com Entity Framework Core e SQL Server.
+
+## Banco de dados local
+
+A string de conexão não é versionada. No ambiente de desenvolvimento ela é armazenada nos **User Secrets** do .NET, fora do repositório.
+
+Para configurar a sua própria instância local, execute na raiz do projeto:
+
+```powershell
+dotnet user-secrets set "ConnectionStrings:StoreDatabase" "Server=SEU_SERVIDOR;Database=StoreDb;Trusted_Connection=True;TrustServerCertificate=True" --project src/Store.Api
+```
+
+Depois, aplique as migrations:
+
+```powershell
+dotnet ef database update --project src/Store.Infrastructure --startup-project src/Store.Api
+```
+
+As migrations ficam em `src/Store.Infrastructure/Persistence/Migrations` e devem ser versionadas; o segredo, não.
+
+## Endpoints
+
+| Método | Rota | Resultado |
+| --- | --- | --- |
+| GET | `/api/v1/products` | Lista produtos |
+| GET | `/api/v1/products/{id}` | Busca por id |
+| POST | `/api/v1/products` | Cria produto |
+| PUT | `/api/v1/products/{id}` | Atualiza produto |
+| DELETE | `/api/v1/products/{id}` | Exclui produto |
+
 Projeto criado com o objetivo de estudar, na prática, os fundamentos do desenvolvimento de **APIs REST utilizando ASP.NET Core e C#**.
 
 Este repositório acompanha minha evolução no desenvolvimento de APIs, começando pelos conceitos mais básicos e avançando gradualmente para arquitetura, persistência de dados, validações, autenticação e boas práticas utilizadas em aplicações reais.

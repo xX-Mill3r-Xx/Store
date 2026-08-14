@@ -1,91 +1,54 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Store.Api.Dtos;
-using Store.Api.Models;
+using Store.Application.Interfaces;
+using Store.Domain.Entities;
 
-namespace Store.Api.Controllers
+namespace Store.Api.Controllers;
+
+[ApiController]
+[Route("api/v1/products")]
+public class ProductsController(IProductService productService) : ControllerBase
 {
-    [ApiController]
-    [Route("api/v1/products")]
-    public class ProductsController : ControllerBase
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<ProductResponse>>> GetAll(CancellationToken cancellationToken)
     {
-        private static readonly List<Product> Products =
-        [
-            new Product
-            {
-                Id = 1,
-                Name = "Notebook",
-                Price = 4500m
-            },
-            new Product
-            {
-                Id = 2,
-                Name = "Mouse",
-                Price = 150m
-            }
-        ];
-
-        [HttpGet]
-        public ActionResult<IEnumerable<ProductResponse>> GetAll()
-        {
-            var response = Products
-                .Select(product => new ProductResponse
-                {
-                    Id = product.Id,
-                    Name = product.Name,
-                    Price = product.Price
-                })
-                .ToList();
-
-            return Ok(response);
-        }
-
-        [HttpGet("{id:int}")]
-        public ActionResult<ProductResponse> GetById(int id)
-        {
-            var product = Products.FirstOrDefault(product => product.Id == id);
-
-            if (product is null)
-            {
-                return NotFound();
-            }
-
-            var response = new ProductResponse
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Price = product.Price
-            };
-
-            return Ok(response);
-        }
-
-        [HttpPost]
-        public ActionResult<ProductResponse> Create(CreateProductRequest request)
-        {
-            var nextId = Products.Count == 0
-                ? 1
-                : Products.Max(product => product.Id) + 1;
-
-            var product = new Product
-            {
-                Id = nextId,
-                Name = request.Name,
-                Price = request.Price,
-            };
-
-            Products.Add(product);
-
-            var response = new ProductResponse
-            {
-                Id= product.Id,
-                Name = product.Name,
-                Price = product.Price,  
-            };
-
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = product.Id },
-                response);
-        }
+        var products = await productService.GetAllAsync(cancellationToken);
+        return Ok(products.Select(ToResponse));
     }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<ProductResponse>> GetById(int id, CancellationToken cancellationToken)
+    {
+        var product = await productService.GetByIdAsync(id, cancellationToken);
+        return product is null ? NotFound() : Ok(ToResponse(product));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<ProductResponse>> Create(CreateProductRequest request, CancellationToken cancellationToken)
+    {
+        var product = await productService.CreateAsync(request.Name, request.Price, cancellationToken);
+        var response = ToResponse(product);
+        return CreatedAtAction(nameof(GetById), new { id = product.Id }, response);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, UpdateProductRequest request, CancellationToken cancellationToken)
+    {
+        var updated = await productService.UpdateAsync(id, request.Name, request.Price, cancellationToken);
+        return updated ? NoContent() : NotFound();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        var deleted = await productService.DeleteAsync(id, cancellationToken);
+        return deleted ? NoContent() : NotFound();
+    }
+
+    private static ProductResponse ToResponse(Product product) => new()
+    {
+        Id = product.Id,
+        Name = product.Name,
+        Price = product.Price
+    };
 }
