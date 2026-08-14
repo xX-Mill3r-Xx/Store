@@ -1,30 +1,31 @@
-﻿namespace Store.Domain.Entities
+namespace Store.Domain.Entities;
+
+public sealed class Product
 {
-    public sealed class Product
+    private Product()
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public decimal Price { get; set; }
+    }
 
-        public Product(int id, string name, decimal price)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException(
-                    "O nome do produto é obrigatório.",
-                    nameof(name));
-            }
+    public Product(string name, decimal price)
+    {
+        SetDetails(name, price);
+    }
 
-            if (price <= 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(price),
-                        "O preço do produto deve ser maior que zero.");
-            }
+    public int Id { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public decimal Price { get; private set; }
 
-            Id = id;
-            Name = name.Trim();
-            Price = price;
-        }
+    public void Update(string name, decimal price) => SetDetails(name, price);
+
+    private void SetDetails(string name, decimal price)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("O nome do produto é obrigatório.", nameof(name));
+
+        if (price <= 0)
+            throw new ArgumentOutOfRangeException(nameof(price), "O preço do produto deve ser maior que zero.");
+
+        Name = name.Trim();
+        Price = price;
     }
 }

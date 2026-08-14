@@ -1,8 +1,13 @@
+using Store.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+var connectionString = builder.Configuration.GetConnectionString("StoreDatabase")
+    ?? throw new InvalidOperationException("A string de conexão 'StoreDatabase' não foi configurada.");
+builder.Services.AddInfrastructure(connectionString);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
